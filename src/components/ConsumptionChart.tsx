@@ -1,4 +1,4 @@
-import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from 'recharts'
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import type { MeterReading } from '../types/reading'
 
 interface ConsumptionChartProps {
@@ -64,7 +64,10 @@ export default function ConsumptionChart({ readings }: ConsumptionChartProps) {
                 ))}
               </Pie>
               <Tooltip
-                formatter={(value: number) => [`${value.toLocaleString()} קוט"ש`, '']}
+                formatter={value => [
+                  `${Number(value ?? 0).toLocaleString()} קוט"ש`,
+                  '',
+                ]}
               />
             </PieChart>
           </ResponsiveContainer>
