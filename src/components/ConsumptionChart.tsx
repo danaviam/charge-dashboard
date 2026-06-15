@@ -36,18 +36,19 @@ export default function ConsumptionChart({ readings }: ConsumptionChartProps) {
   const isEmpty = data.length === 0
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-6 flex flex-col">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4 text-right">
+    <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 flex flex-col">
+      <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-4 text-right">
         התפלגות החודש הנוכחי
       </h2>
 
       {isEmpty ? (
-        <div className="flex-1 flex items-center justify-center text-gray-400 text-sm py-8">
+        <div className="flex-1 flex items-center justify-center text-gray-400 text-sm py-6 sm:py-8">
           אין נתונים לחודש הנוכחי
         </div>
       ) : (
         <>
-          <ResponsiveContainer width="100%" height={200}>
+          <div className="h-40 sm:h-[200px]">
+            <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={data}
@@ -70,6 +71,7 @@ export default function ConsumptionChart({ readings }: ConsumptionChartProps) {
               />
             </PieChart>
           </ResponsiveContainer>
+          </div>
 
           <div className="flex flex-col gap-1 mt-3 text-sm text-right">
             {data.map(entry => (

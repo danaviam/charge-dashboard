@@ -35,7 +35,7 @@ function Dashboard() {
     <div className="min-h-screen bg-gray-100">
       <Header />
 
-      <main className="max-w-5xl mx-auto px-4 pb-10 space-y-6">
+      <main className="max-w-5xl mx-auto px-3 sm:px-4 pb-6 sm:pb-10 space-y-4 sm:space-y-6">
         {!supabaseReady && (
           <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 text-amber-800 text-sm text-right">
             <strong>הגדרת Supabase נדרשת:</strong> ערוך את קובץ{' '}
@@ -52,7 +52,7 @@ function Dashboard() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
           <ReadingForm readings={readings} onSaved={fetchReadings} />
           <ConsumptionChart readings={readings} />
         </div>

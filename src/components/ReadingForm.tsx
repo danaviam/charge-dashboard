@@ -64,29 +64,29 @@ export default function ReadingForm({ readings, onSaved }: ReadingFormProps) {
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-6">
-      <h2 className="text-lg font-semibold text-gray-800 mb-4 text-right">
+    <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
+      <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-4 text-right">
         הזנת קריאת מונה
       </h2>
-      <form onSubmit={handleSubmit} className="flex flex-wrap gap-3 items-end justify-end">
-        <div className="flex flex-col gap-1 items-end min-w-[100px]">
-          <label className="text-sm text-gray-600">עמדה</label>
+      <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row sm:flex-wrap gap-4 sm:gap-3 sm:items-end sm:justify-end">
+        <div className="flex flex-col gap-1.5 items-stretch sm:items-end w-full sm:w-auto sm:min-w-[100px]">
+          <label className="text-sm text-gray-600 text-right">עמדה</label>
           <select
             value={station}
             onChange={e => handleStationChange(e.target.value as Station)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            className="border border-gray-300 rounded-lg px-3 py-3 sm:py-2 text-base sm:text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 w-full"
           >
             <option value="dan">דן</option>
             <option value="rothschild">רוטשילד</option>
           </select>
         </div>
 
-        <div className="flex flex-col gap-1 items-end min-w-[180px]">
-          <label className="text-sm text-gray-600">
+        <div className="flex flex-col gap-1.5 items-stretch sm:items-end w-full sm:w-auto sm:min-w-[180px]">
+          <label className="text-sm text-gray-600 text-right">
             קריאת מונה (קוט&quot;ש)
             {lastReading !== null && (
-              <span className="text-gray-400 font-normal text-xs me-1">
-                {' '}— קודמת: {lastReading.toLocaleString()}
+              <span className="block sm:inline text-gray-400 font-normal text-xs mt-0.5 sm:mt-0 sm:me-1">
+                קודמת: {lastReading.toLocaleString()}
               </span>
             )}
           </label>
@@ -99,7 +99,7 @@ export default function ReadingForm({ readings, onSaved }: ReadingFormProps) {
             value={reading}
             onChange={e => setReading(e.target.value.replace(/\D/g, ''))}
             placeholder="0"
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            className="border border-gray-300 rounded-lg px-3 py-3 sm:py-2 text-base sm:text-sm w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
             required
           />
         </div>
@@ -107,7 +107,7 @@ export default function ReadingForm({ readings, onSaved }: ReadingFormProps) {
         <button
           type="submit"
           disabled={saving}
-          className="bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium px-6 py-2 rounded-lg text-sm transition-colors"
+          className="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium px-6 py-3 sm:py-2 rounded-lg text-base sm:text-sm transition-colors min-h-[44px]"
         >
           {saving ? 'שומר...' : 'שמור'}
         </button>

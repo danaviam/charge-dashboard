@@ -10,6 +10,11 @@ body {
   background-color: #f0f4f8;
   margin: 0;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#root {
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 input[type='number']::-webkit-inner-spin-button,
