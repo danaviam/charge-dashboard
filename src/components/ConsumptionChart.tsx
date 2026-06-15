@@ -64,10 +64,9 @@ export default function ConsumptionChart({ readings }: ConsumptionChartProps) {
                 ))}
               </Pie>
               <Tooltip
-                formatter={value => [
-                  `${Number(value ?? 0).toLocaleString()} קוט"ש`,
-                  '',
-                ]}
+                formatter={value =>
+                  `${Number(value ?? 0).toLocaleString()} קוט"ש`
+                }
               />
             </PieChart>
           </ResponsiveContainer>
