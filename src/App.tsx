@@ -53,7 +53,7 @@ function Dashboard() {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <ReadingForm onSaved={fetchReadings} />
+          <ReadingForm readings={readings} onSaved={fetchReadings} />
           <ConsumptionChart readings={readings} />
         </div>
 

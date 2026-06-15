@@ -1,33 +1,29 @@
-import { useEffect, useState } from 'react'
+import { useMemo, useState } from 'react'
 import { supabase } from '../lib/supabase'
-import type { Station } from '../types/reading'
+import type { MeterReading, Station } from '../types/reading'
 
 interface ReadingFormProps {
+  readings: MeterReading[]
   onSaved: () => void
 }
 
-export default function ReadingForm({ onSaved }: ReadingFormProps) {
+function getLastReading(readings: MeterReading[], station: Station): number | null {
+  const stationReadings = readings.filter(r => r.station === station)
+  if (stationReadings.length === 0) return null
+
+  return Math.max(...stationReadings.map(r => Number(r.reading_kwh)))
+}
+
+export default function ReadingForm({ readings, onSaved }: ReadingFormProps) {
   const [station, setStation] = useState<Station>('dan')
   const [reading, setReading] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [lastReading, setLastReading] = useState<number | null>(null)
 
-  useEffect(() => {
-    setLastReading(null)
-    const fetchLast = async () => {
-      const { data } = await supabase
-        .from('meter_readings')
-        .select('reading_kwh')
-        .eq('station', station)
-        .order('reading_kwh', { ascending: false })
-        .limit(1)
-        .maybeSingle()
-
-      setLastReading(data ? data.reading_kwh : null)
-    }
-    fetchLast()
-  }, [station])
+  const lastReading = useMemo(
+    () => getLastReading(readings, station),
+    [readings, station]
+  )
 
   const handleStationChange = (s: Station) => {
     setStation(s)
@@ -39,9 +35,9 @@ export default function ReadingForm({ onSaved }: ReadingFormProps) {
     e.preventDefault()
     setError(null)
 
-    const value = parseFloat(reading)
+    const value = parseInt(reading, 10)
     if (isNaN(value) || value < 0) {
-      setError('יש להזין ערך מספרי חיובי')
+      setError('יש להזין מספר שלם חיובי')
       return
     }
 
@@ -65,7 +61,6 @@ export default function ReadingForm({ onSaved }: ReadingFormProps) {
     }
 
     setReading('')
-    setLastReading(value)
     onSaved()
   }
 
@@ -98,10 +93,12 @@ export default function ReadingForm({ onSaved }: ReadingFormProps) {
           </label>
           <input
             type="number"
-            min={lastReading !== null ? lastReading + 0.001 : 0}
-            step="any"
+            min={lastReading !== null ? lastReading + 1 : 0}
+            step="1"
+            inputMode="numeric"
+            pattern="[0-9]*"
             value={reading}
-            onChange={e => setReading(e.target.value)}
+            onChange={e => setReading(e.target.value.replace(/\D/g, ''))}
             placeholder="0"
             className="border border-gray-300 rounded-lg px-3 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-indigo-400"
             required

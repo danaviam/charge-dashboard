@@ -65,7 +65,7 @@ export default function HistoryTable({ readings, onDeleted, onUpdated }: History
   }
 
   const saveEdit = async (id: string) => {
-    const value = parseFloat(editValue)
+    const value = parseInt(editValue, 10)
     if (isNaN(value) || value < 0) return
     setSaving(true)
     await supabase.from('meter_readings').update({ reading_kwh: value }).eq('id', id)
@@ -120,9 +120,11 @@ export default function HistoryTable({ readings, onDeleted, onUpdated }: History
                         <input
                           type="number"
                           min="0"
-                          step="any"
+                          step="1"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
                           value={editValue}
-                          onChange={e => setEditValue(e.target.value)}
+                          onChange={e => setEditValue(e.target.value.replace(/\D/g, ''))}
                           onKeyDown={e => {
                             if (e.key === 'Enter') saveEdit(r.id)
                             if (e.key === 'Escape') cancelEdit()
