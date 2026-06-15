@@ -7,11 +7,13 @@ interface ReadingFormProps {
   onSaved: () => void
 }
 
-function getLastReading(readings: MeterReading[], station: Station): number | null {
-  const stationReadings = readings.filter(r => r.station === station)
-  if (stationReadings.length === 0) return null
+function getLastReading(readings: MeterReading[]): number | null {
+  const sorted = [...readings].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  )
+  const latest = sorted[0] ?? null
 
-  return Math.max(...stationReadings.map(r => Number(r.reading_kwh)))
+  return latest ? Number(latest.reading_kwh) : null
 }
 
 export default function ReadingForm({ readings, onSaved }: ReadingFormProps) {
@@ -20,10 +22,7 @@ export default function ReadingForm({ readings, onSaved }: ReadingFormProps) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const lastReading = useMemo(
-    () => getLastReading(readings, station),
-    [readings, station]
-  )
+  const lastReading = useMemo(() => getLastReading(readings), [readings])
 
   const handleStationChange = (s: Station) => {
     setStation(s)
