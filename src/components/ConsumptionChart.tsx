@@ -1,4 +1,5 @@
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
+import { consumptionTotals } from '../lib/consumption'
 import type { MeterReading } from '../types/reading'
 
 interface ConsumptionChartProps {
@@ -15,23 +16,19 @@ export default function ConsumptionChart({ readings }: ConsumptionChartProps) {
   const currentMonth = now.getMonth()
   const currentYear = now.getFullYear()
 
-  const monthly = readings.filter(r => {
-    const d = new Date(r.created_at)
-    return d.getMonth() === currentMonth && d.getFullYear() === currentYear
-  })
-
-  const danTotal = monthly
-    .filter(r => r.station === 'dan')
-    .reduce((sum, r) => sum + r.reading_kwh, 0)
-
-  const rothschildTotal = monthly
-    .filter(r => r.station === 'rothschild')
-    .reduce((sum, r) => sum + r.reading_kwh, 0)
+  const { totalDan: danTotal, totalRothschild: rothschildTotal } = consumptionTotals(
+    readings,
+    { month: currentMonth, year: currentYear }
+  )
 
   const data = [
     { name: 'דן', value: danTotal },
     { name: 'רוטשילד', value: rothschildTotal },
   ].filter(d => d.value > 0)
+
+  const total = data.reduce((sum, d) => sum + d.value, 0)
+  const percentOf = (value: number) =>
+    total > 0 ? Math.round((value / total) * 100) : 0
 
   const isEmpty = data.length === 0
 
@@ -73,17 +70,17 @@ export default function ConsumptionChart({ readings }: ConsumptionChartProps) {
           </ResponsiveContainer>
           </div>
 
-          <div className="flex flex-col gap-1 mt-3 text-sm text-right">
+          <div className="flex flex-col gap-1 mt-3 text-sm w-full items-start">
             {data.map(entry => (
-              <div key={entry.name} className="flex items-center justify-end gap-2">
-                <span className="text-gray-600">
-                  <span className="font-semibold">{entry.name}</span>{' '}
-                  {entry.value.toLocaleString()} קוט&quot;ש
-                </span>
+              <div key={entry.name} className="flex items-center gap-2">
                 <span
-                  className="w-3 h-3 rounded-full inline-block"
+                  className="w-3 h-3 rounded-full shrink-0"
                   style={{ backgroundColor: COLORS[entry.name] }}
                 />
+                <span className="text-gray-600">
+                  <span className="font-semibold">{entry.name}</span>{' '}
+                  {entry.value.toLocaleString()} קוט&quot;ש ({percentOf(entry.value)}%)
+                </span>
               </div>
             ))}
           </div>

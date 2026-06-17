@@ -20,10 +20,17 @@ export default function Header() {
 
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (loginAsAdmin(password)) {
+    const result = loginAsAdmin(password)
+    if (result === 'success') {
       setShowLogin(false)
       setPassword('')
       setLoginError(null)
+      return
+    }
+    if (result === 'missing-config') {
+      setLoginError(
+        'סיסמת מנהל לא הוגדרה בשרת. הוסף VITE_ADMIN_PASSWORD ב-Vercel ופרוס מחדש.'
+      )
       return
     }
     setLoginError('סיסמה שגויה')

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { consumptionTotals } from '../lib/consumption'
 import { supabase } from '../lib/supabase'
 import { useRole } from '../context/RoleContext'
 import type { MeterReading } from '../types/reading'
@@ -7,16 +8,6 @@ interface HistoryTableProps {
   readings: MeterReading[]
   onDeleted: () => void
   onUpdated: () => void
-}
-
-function computeTotals(readings: MeterReading[]) {
-  let totalDan = 0
-  let totalRothschild = 0
-  for (const r of readings) {
-    if (r.station === 'dan') totalDan += r.reading_kwh
-    else totalRothschild += r.reading_kwh
-  }
-  return { totalDan, totalRothschild }
 }
 
 function formatDate(iso: string) {
@@ -46,7 +37,7 @@ export default function HistoryTable({ readings, onDeleted, onUpdated }: History
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   )
 
-  const { totalDan, totalRothschild } = computeTotals(readings)
+  const { totalDan, totalRothschild } = consumptionTotals(readings)
 
   const handleDelete = async (id: string) => {
     if (!confirm('למחוק קריאה זו?')) return
