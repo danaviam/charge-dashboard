@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { consumptionTotals } from '../lib/consumption'
+import { consumptionTotals, allReadingIds } from '../lib/consumption'
+import { captureLastBaselineFromReadings, setLastBaseline } from '../lib/baseline'
 import { supabase } from '../lib/supabase'
 import { useRole } from '../context/RoleContext'
 import type { MeterReading } from '../types/reading'
@@ -32,6 +33,7 @@ export default function HistoryTable({ readings, onDeleted, onUpdated }: History
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editValue, setEditValue] = useState('')
   const [saving, setSaving] = useState(false)
+  const [deletingHistory, setDeletingHistory] = useState(false)
 
   const sorted = [...readings].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -42,6 +44,34 @@ export default function HistoryTable({ readings, onDeleted, onUpdated }: History
   const handleDelete = async (id: string) => {
     if (!confirm('למחוק קריאה זו?')) return
     await supabase.from('meter_readings').delete().eq('id', id)
+    onDeleted()
+  }
+
+  const handleClearHistory = async () => {
+    const idsToDelete = allReadingIds(readings)
+    const capturedBaseline = captureLastBaselineFromReadings(readings)
+    if (idsToDelete.length === 0) {
+      alert('אין קריאות למחיקה')
+      return
+    }
+
+    const message =
+      `למחוק ${idsToDelete.length} קריאות מההיסטוריה?\n\n` +
+      'הקריאה האחרונה תישמר לצורך חישובים עתידיים (קודמת).'
+
+    if (!confirm(message)) return
+
+    setLastBaseline(capturedBaseline)
+
+    setDeletingHistory(true)
+    const { error } = await supabase.from('meter_readings').delete().in('id', idsToDelete)
+    setDeletingHistory(false)
+
+    if (error) {
+      alert(`שגיאה במחיקה: ${error.message}`)
+      return
+    }
+
     onDeleted()
   }
 
@@ -158,9 +188,22 @@ export default function HistoryTable({ readings, onDeleted, onUpdated }: History
 
   return (
     <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
-      <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-4 text-right">
-        היסטוריית קריאות
-      </h2>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-800 text-right">
+          היסטוריית קריאות
+        </h2>
+        {isAdmin && readings.length > 0 && (
+          <button
+            type="button"
+            onClick={handleClearHistory}
+            disabled={deletingHistory}
+            title="מחק את כל ההיסטוריה; הקריאה האחרונה תישמר בקודמת"
+            className="shrink-0 text-sm text-red-600 hover:text-red-800 border border-red-200 hover:border-red-300 rounded-lg px-3 py-2 disabled:opacity-50 transition-colors min-h-[44px] sm:min-h-0"
+          >
+            {deletingHistory ? 'מוחק...' : 'מחק היסטוריה'}
+          </button>
+        )}
+      </div>
 
       {readings.length === 0 ? (
         <p className="text-gray-400 text-sm text-center py-6">אין קריאות עדיין</p>

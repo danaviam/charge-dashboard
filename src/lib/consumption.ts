@@ -1,4 +1,5 @@
 import type { MeterReading, Station } from '../types/reading'
+import { getLastBaseline } from './baseline'
 
 function sortByDateAsc(readings: MeterReading[]) {
   return [...readings].sort(
@@ -9,6 +10,11 @@ function sortByDateAsc(readings: MeterReading[]) {
 function isInMonth(iso: string, month: number, year: number) {
   const d = new Date(iso)
   return d.getMonth() === month && d.getFullYear() === year
+}
+
+/** All reading IDs — used when clearing history (baselines stored separately). */
+export function allReadingIds(readings: MeterReading[]): string[] {
+  return readings.map(r => r.id)
 }
 
 export function stationConsumption(
@@ -31,7 +37,9 @@ export function stationConsumption(
   if (atStation.length === 1) {
     const globalIdx = sorted.findIndex(r => r.id === first.id)
     const previous =
-      globalIdx > 0 ? Number(sorted[globalIdx - 1].reading_kwh) : 0
+      globalIdx > 0
+        ? Number(sorted[globalIdx - 1].reading_kwh)
+        : (getLastBaseline()?.reading_kwh ?? 0)
     return Math.max(0, Number(last.reading_kwh) - previous)
   }
 

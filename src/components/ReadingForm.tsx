@@ -1,19 +1,11 @@
 import { useMemo, useState } from 'react'
+import { getLastReading } from '../lib/baseline'
 import { supabase } from '../lib/supabase'
 import type { MeterReading, Station } from '../types/reading'
 
 interface ReadingFormProps {
   readings: MeterReading[]
   onSaved: () => void
-}
-
-function getLastReading(readings: MeterReading[]): number | null {
-  const sorted = [...readings].sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  )
-  const latest = sorted[0] ?? null
-
-  return latest ? Number(latest.reading_kwh) : null
 }
 
 export default function ReadingForm({ readings, onSaved }: ReadingFormProps) {
