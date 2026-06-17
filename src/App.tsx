@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { supabase, supabaseReady } from './lib/supabase'
+import { filterVisibleReadings } from './lib/hiddenReadings'
 import { RoleProvider } from './context/RoleContext'
 import Header from './components/Header'
 import ReadingForm from './components/ReadingForm'
@@ -11,6 +12,16 @@ function Dashboard() {
   const [readings, setReadings] = useState<MeterReading[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
+  const [displayVersion, setDisplayVersion] = useState(0)
+
+  const visibleReadings = useMemo(
+    () => filterVisibleReadings(readings),
+    [readings, displayVersion]
+  )
+
+  const refreshDisplay = useCallback(() => {
+    setDisplayVersion(v => v + 1)
+  }, [])
 
   const fetchReadings = useCallback(async () => {
     setFetchError(null)
@@ -53,8 +64,8 @@ function Dashboard() {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-          <ReadingForm readings={readings} onSaved={fetchReadings} />
-          <ConsumptionChart readings={readings} />
+          <ReadingForm readings={visibleReadings} onSaved={fetchReadings} />
+          <ConsumptionChart readings={visibleReadings} />
         </div>
 
         {loading ? (
@@ -62,7 +73,12 @@ function Dashboard() {
             טוען נתונים...
           </div>
         ) : (
-          <HistoryTable readings={readings} onDeleted={fetchReadings} onUpdated={fetchReadings} />
+          <HistoryTable
+            readings={visibleReadings}
+            onDeleted={fetchReadings}
+            onUpdated={fetchReadings}
+            onHistoryHidden={refreshDisplay}
+          />
         )}
       </main>
     </div>

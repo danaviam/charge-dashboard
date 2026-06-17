@@ -12,11 +12,6 @@ function isInMonth(iso: string, month: number, year: number) {
   return d.getMonth() === month && d.getFullYear() === year
 }
 
-/** All reading IDs — used when clearing history (baselines stored separately). */
-export function allReadingIds(readings: MeterReading[]): string[] {
-  return readings.map(r => r.id)
-}
-
 export function stationConsumption(
   readings: MeterReading[],
   station: Station,

@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { consumptionTotals, allReadingIds } from '../lib/consumption'
+import { consumptionTotals } from '../lib/consumption'
 import { captureLastBaselineFromReadings, setLastBaseline } from '../lib/baseline'
+import { hideReadingIds } from '../lib/hiddenReadings'
 import { supabase } from '../lib/supabase'
 import { useRole } from '../context/RoleContext'
 import type { MeterReading } from '../types/reading'
@@ -9,6 +10,7 @@ interface HistoryTableProps {
   readings: MeterReading[]
   onDeleted: () => void
   onUpdated: () => void
+  onHistoryHidden: () => void
 }
 
 function formatDate(iso: string) {
@@ -26,7 +28,7 @@ const stationLabel: Record<string, { label: string; className: string }> = {
   rothschild: { label: 'רוטשילד', className: 'bg-red-100 text-red-700' },
 }
 
-export default function HistoryTable({ readings, onDeleted, onUpdated }: HistoryTableProps) {
+export default function HistoryTable({ readings, onDeleted, onUpdated, onHistoryHidden }: HistoryTableProps) {
   const { role } = useRole()
   const isAdmin = role === 'admin'
 
@@ -47,16 +49,16 @@ export default function HistoryTable({ readings, onDeleted, onUpdated }: History
     onDeleted()
   }
 
-  const handleClearHistory = async () => {
-    const idsToDelete = allReadingIds(readings)
+  const handleClearHistory = () => {
+    const idsToHide = readings.map(r => r.id)
     const capturedBaseline = captureLastBaselineFromReadings(readings)
-    if (idsToDelete.length === 0) {
+    if (idsToHide.length === 0) {
       alert('אין קריאות למחיקה')
       return
     }
 
     const message =
-      `למחוק ${idsToDelete.length} קריאות מההיסטוריה?\n\n` +
+      `להסתיר ${idsToHide.length} קריאות מההיסטוריה?\n\n` +
       'הקריאה האחרונה תישמר לצורך חישובים עתידיים (קודמת).'
 
     if (!confirm(message)) return
@@ -64,15 +66,10 @@ export default function HistoryTable({ readings, onDeleted, onUpdated }: History
     setLastBaseline(capturedBaseline)
 
     setDeletingHistory(true)
-    const { error } = await supabase.from('meter_readings').delete().in('id', idsToDelete)
+    hideReadingIds(idsToHide)
     setDeletingHistory(false)
 
-    if (error) {
-      alert(`שגיאה במחיקה: ${error.message}`)
-      return
-    }
-
-    onDeleted()
+    onHistoryHidden()
   }
 
   const startEdit = (r: MeterReading) => {
@@ -197,7 +194,7 @@ export default function HistoryTable({ readings, onDeleted, onUpdated }: History
             type="button"
             onClick={handleClearHistory}
             disabled={deletingHistory}
-            title="מחק את כל ההיסטוריה; הקריאה האחרונה תישמר בקודמת"
+            title="הסתר את כל ההיסטוריה מהתצוגה; הקריאה האחרונה תישמר בקודמת"
             className="shrink-0 text-sm text-red-600 hover:text-red-800 border border-red-200 hover:border-red-300 rounded-lg px-3 py-2 disabled:opacity-50 transition-colors min-h-[44px] sm:min-h-0"
           >
             {deletingHistory ? 'מוחק...' : 'מחק היסטוריה'}
