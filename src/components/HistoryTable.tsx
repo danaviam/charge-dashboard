@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import AdminDialog from './AdminDialog'
 import { consumptionTotals } from '../lib/consumption'
 import { captureLastBaselineFromReadings, setLastBaseline } from '../lib/baseline'
 import { hideReadingIds } from '../lib/hiddenReadings'
@@ -36,6 +37,14 @@ export default function HistoryTable({ readings, onDeleted, onUpdated, onHistory
   const [editValue, setEditValue] = useState('')
   const [saving, setSaving] = useState(false)
   const [deletingHistory, setDeletingHistory] = useState(false)
+  const [dialog, setDialog] = useState<{
+    message: string
+    mode: 'confirm' | 'alert'
+    confirmLabel?: string
+    onConfirm: () => void
+  } | null>(null)
+
+  const closeDialog = () => setDialog(null)
 
   const sorted = [...readings].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
@@ -43,17 +52,28 @@ export default function HistoryTable({ readings, onDeleted, onUpdated, onHistory
 
   const { totalDan, totalRothschild } = consumptionTotals(readings)
 
-  const handleDelete = async (id: string) => {
-    if (!confirm('למחוק קריאה זו?')) return
-    await supabase.from('meter_readings').delete().eq('id', id)
-    onDeleted()
+  const handleDelete = (id: string) => {
+    setDialog({
+      message: 'למחוק קריאה זו?',
+      mode: 'confirm',
+      confirmLabel: 'מחק',
+      onConfirm: async () => {
+        closeDialog()
+        await supabase.from('meter_readings').delete().eq('id', id)
+        onDeleted()
+      },
+    })
   }
 
   const handleClearHistory = () => {
     const idsToHide = readings.map(r => r.id)
     const capturedBaseline = captureLastBaselineFromReadings(readings)
     if (idsToHide.length === 0) {
-      alert('אין קריאות למחיקה')
+      setDialog({
+        message: 'אין קריאות למחיקה',
+        mode: 'alert',
+        onConfirm: closeDialog,
+      })
       return
     }
 
@@ -61,15 +81,19 @@ export default function HistoryTable({ readings, onDeleted, onUpdated, onHistory
       `להסתיר ${idsToHide.length} קריאות מההיסטוריה?\n\n` +
       'הקריאה האחרונה תישמר לצורך חישובים עתידיים (קודמת).'
 
-    if (!confirm(message)) return
-
-    setLastBaseline(capturedBaseline)
-
-    setDeletingHistory(true)
-    hideReadingIds(idsToHide)
-    setDeletingHistory(false)
-
-    onHistoryHidden()
+    setDialog({
+      message,
+      mode: 'confirm',
+      confirmLabel: 'מחק היסטוריה',
+      onConfirm: () => {
+        closeDialog()
+        setLastBaseline(capturedBaseline)
+        setDeletingHistory(true)
+        hideReadingIds(idsToHide)
+        setDeletingHistory(false)
+        onHistoryHidden()
+      },
+    })
   }
 
   const startEdit = (r: MeterReading) => {
@@ -184,7 +208,8 @@ export default function HistoryTable({ readings, onDeleted, onUpdated, onHistory
   )
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
+    <>
+      <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
         <h2 className="text-base sm:text-lg font-semibold text-gray-800 text-right">
           היסטוריית קריאות
@@ -321,6 +346,16 @@ export default function HistoryTable({ readings, onDeleted, onUpdated, onHistory
           </div>
         </>
       )}
-    </div>
+      </div>
+
+      <AdminDialog
+        open={dialog !== null}
+        message={dialog?.message ?? ''}
+        mode={dialog?.mode ?? 'alert'}
+        confirmLabel={dialog?.confirmLabel}
+        onConfirm={dialog?.onConfirm ?? closeDialog}
+        onCancel={closeDialog}
+      />
+    </>
   )
 }
