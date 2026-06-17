@@ -44,15 +44,15 @@ export default function ConsumptionChart({ readings }: ConsumptionChartProps) {
         </div>
       ) : (
         <>
-          <div className="h-40 sm:h-[200px]">
+          <div className="mx-auto w-full max-w-[200px] aspect-square sm:max-w-none sm:aspect-auto sm:h-[200px]">
             <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
+            <PieChart margin={{ top: 4, right: 4, bottom: 4, left: 4 }}>
               <Pie
                 data={data}
                 cx="50%"
                 cy="50%"
-                innerRadius={55}
-                outerRadius={85}
+                innerRadius="55%"
+                outerRadius="82%"
                 dataKey="value"
                 startAngle={90}
                 endAngle={-270}
