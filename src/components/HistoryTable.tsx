@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import AdminDialog from './AdminDialog'
-import { consumptionTotals } from '../lib/consumption'
+import { consumptionTotals, readingDiffById } from '../lib/consumption'
 import { captureLastBaselineFromReadings, setLastBaseline } from '../lib/baseline'
 import { hideReadingIds } from '../lib/hiddenReadings'
 import { supabase } from '../lib/supabase'
@@ -46,9 +46,16 @@ export default function HistoryTable({ readings, onDeleted, onUpdated, onHistory
 
   const closeDialog = () => setDialog(null)
 
-  const sorted = [...readings].sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  const sorted = useMemo(
+    () =>
+      [...readings].sort(
+        (a, b) =>
+          Number(b.reading_kwh) - Number(a.reading_kwh) ||
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      ),
+    [readings]
   )
+  const diffById = useMemo(() => readingDiffById(readings), [readings])
 
   const { totalDan, totalRothschild } = consumptionTotals(readings)
 
@@ -117,7 +124,8 @@ export default function HistoryTable({ readings, onDeleted, onUpdated, onHistory
     onUpdated()
   }
 
-  const colCount = isAdmin ? 4 : 3
+  const colCount = isAdmin ? 5 : 4
+  const summaryLabelColSpan = isAdmin ? colCount - 3 : colCount - 2
 
   const renderActions = (r: MeterReading) => {
     const isEditing = editingId === r.id
@@ -235,6 +243,7 @@ export default function HistoryTable({ readings, onDeleted, onUpdated, onHistory
           <div className="md:hidden space-y-3">
             {sorted.map(r => {
               const st = stationLabel[r.station]
+              const readingDiff = diffById[r.id] ?? 0
               return (
                 <div
                   key={r.id}
@@ -254,6 +263,9 @@ export default function HistoryTable({ readings, onDeleted, onUpdated, onHistory
                     {renderReadingValue(r)}
                     {renderActions(r)}
                   </div>
+                  <p className="mt-2 text-sm text-indigo-700 font-medium">
+                    הפרש: {readingDiff.toLocaleString()} קוט&quot;ש
+                  </p>
                 </div>
               )
             })}
@@ -268,6 +280,7 @@ export default function HistoryTable({ readings, onDeleted, onUpdated, onHistory
                   <th className="pb-3 px-2 font-medium">תאריך</th>
                   <th className="pb-3 px-2 font-medium">עמדה</th>
                   <th className="pb-3 px-2 font-medium">קריאה (קוט&quot;ש)</th>
+                  <th className="pb-3 px-2 font-medium">הפרש (קוט&quot;ש)</th>
                   {isAdmin && <th className="pb-3 px-2 font-medium">פעולות</th>}
                 </tr>
               </thead>
@@ -275,6 +288,7 @@ export default function HistoryTable({ readings, onDeleted, onUpdated, onHistory
                 {sorted.map((r, idx) => {
                   const st = stationLabel[r.station]
                   const isEditing = editingId === r.id
+                  const readingDiff = diffById[r.id] ?? 0
                   return (
                     <tr
                       key={r.id}
@@ -311,6 +325,9 @@ export default function HistoryTable({ readings, onDeleted, onUpdated, onHistory
                           r.reading_kwh.toLocaleString()
                         )}
                       </td>
+                      <td className="py-2 px-2 font-semibold text-indigo-700">
+                        {readingDiff.toLocaleString()}
+                      </td>
                       {isAdmin && (
                         <td className="py-2 px-2">{renderActions(r)}</td>
                       )}
@@ -320,7 +337,7 @@ export default function HistoryTable({ readings, onDeleted, onUpdated, onHistory
               </tbody>
               <tfoot>
                 <tr className="border-t-2 border-gray-300 bg-gray-50 font-semibold text-gray-700">
-                  <td className="pt-3 pb-1 px-2" colSpan={colCount - 2}>
+                  <td className="pt-3 pb-1 px-2" colSpan={summaryLabelColSpan}>
                     סה&quot;כ
                   </td>
                   <td className="pt-3 pb-1 px-2">
@@ -329,16 +346,18 @@ export default function HistoryTable({ readings, onDeleted, onUpdated, onHistory
                       דן: {totalDan.toLocaleString()} קוט&quot;ש
                     </span>
                   </td>
+                  <td />
                   {isAdmin && <td />}
                 </tr>
                 <tr className="bg-gray-50 font-semibold text-gray-700">
-                  <td className="pt-1 pb-3 px-2" colSpan={colCount - 2} />
+                  <td className="pt-1 pb-3 px-2" colSpan={summaryLabelColSpan} />
                   <td className="pt-1 pb-3 px-2">
                     <span className="inline-flex items-center gap-2">
                       <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-500" />
                       רוטשילד: {totalRothschild.toLocaleString()} קוט&quot;ש
                     </span>
                   </td>
+                  <td />
                   {isAdmin && <td />}
                 </tr>
               </tfoot>

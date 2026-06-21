@@ -15,8 +15,8 @@ const RoleContext = createContext<RoleContextValue | null>(null)
 const ADMIN_PASSWORD = import.meta.env.VITE_ADMIN_PASSWORD?.trim() || undefined
 
 function getInitialRole(): Role {
-  const stored = localStorage.getItem('dashboard_role')
-  return stored === 'admin' ? 'admin' : 'user'
+  localStorage.setItem('dashboard_role', 'user')
+  return 'user'
 }
 
 export function RoleProvider({ children }: { children: ReactNode }) {
