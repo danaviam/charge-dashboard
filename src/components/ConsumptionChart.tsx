@@ -27,8 +27,6 @@ export default function ConsumptionChart({ readings }: ConsumptionChartProps) {
   ].filter(d => d.value > 0)
 
   const total = data.reduce((sum, d) => sum + d.value, 0)
-  const percentOf = (value: number) =>
-    total > 0 ? Math.round((value / total) * 100) : 0
 
   const isEmpty = data.length === 0
 
