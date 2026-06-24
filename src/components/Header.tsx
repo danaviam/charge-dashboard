@@ -57,7 +57,7 @@ export default function Header() {
               }`}
             >
               <span className="text-[10px]">{isAdmin ? '🔑' : '👤'}</span>
-              <span>{isAdmin ? 'מנהל' : 'משתמש'}</span>
+              <span>{isAdmin ? 'מנהל' : 'כניסת מנהל'}</span>
             </button>
 
             <div className="flex-1 text-center px-1 sm:px-14">
