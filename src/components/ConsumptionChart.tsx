@@ -51,7 +51,7 @@ export default function ConsumptionChart({ readings }: ConsumptionChartProps) {
                 data={data}
                 cx="50%"
                 cy="50%"
-                innerRadius="55%"
+                innerRadius={0}
                 outerRadius="82%"
                 dataKey="value"
                 startAngle={90}
