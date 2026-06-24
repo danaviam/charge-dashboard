@@ -58,6 +58,7 @@ export default function HistoryTable({ readings, onDeleted, onUpdated, onHistory
   const diffById = useMemo(() => readingDiffById(readings), [readings])
 
   const { totalDan, totalRothschild } = consumptionTotals(readings)
+  const totalAll = totalDan + totalRothschild
 
   const handleDelete = (id: string) => {
     setDialog({
@@ -125,7 +126,6 @@ export default function HistoryTable({ readings, onDeleted, onUpdated, onHistory
   }
 
   const colCount = isAdmin ? 5 : 4
-  const summaryLabelColSpan = isAdmin ? colCount - 3 : colCount - 2
 
   const renderActions = (r: MeterReading) => {
     const isEditing = editingId === r.id
@@ -202,15 +202,24 @@ export default function HistoryTable({ readings, onDeleted, onUpdated, onHistory
   }
 
   const summaryBlock = (
-    <div className="rounded-xl border border-gray-200 bg-gray-50 p-3 space-y-2 text-sm font-semibold text-gray-700">
-      <p className="text-gray-500 font-medium text-xs mb-1">סה&quot;כ</p>
-      <div className="flex items-center justify-end gap-2">
-        <span>דן: {totalDan.toLocaleString()} קוט&quot;ש</span>
-        <span className="inline-block w-2.5 h-2.5 rounded-full bg-blue-500 shrink-0" />
+    <div className="flex flex-col gap-1 mt-3 text-sm w-full" dir="rtl">
+      <div className="flex justify-between items-center font-semibold text-gray-800 border-b border-gray-100 pb-1 mb-1">
+        <span>סה&quot;כ</span>
+        <span>{totalAll.toLocaleString()} קוט&quot;ש</span>
       </div>
-      <div className="flex items-center justify-end gap-2">
-        <span>רוטשילד: {totalRothschild.toLocaleString()} קוט&quot;ש</span>
-        <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-500 shrink-0" />
+      <div className="flex justify-between items-center text-gray-600">
+        <div className="flex items-center gap-2">
+          <span className="w-3 h-3 rounded-full shrink-0 bg-blue-500" />
+          <span className="font-medium">דן</span>
+        </div>
+        <span>{totalDan.toLocaleString()} קוט&quot;ש</span>
+      </div>
+      <div className="flex justify-between items-center text-gray-600">
+        <div className="flex items-center gap-2">
+          <span className="w-3 h-3 rounded-full shrink-0 bg-red-500" />
+          <span className="font-medium">רוטשילד</span>
+        </div>
+        <span>{totalRothschild.toLocaleString()} קוט&quot;ש</span>
       </div>
     </div>
   )
@@ -336,29 +345,29 @@ export default function HistoryTable({ readings, onDeleted, onUpdated, onHistory
                 })}
               </tbody>
               <tfoot>
-                <tr className="border-t-2 border-gray-300 bg-gray-50 font-semibold text-gray-700">
-                  <td className="pt-3 pb-1 px-2" colSpan={summaryLabelColSpan}>
-                    סה&quot;כ
+                <tr className="border-t-2 border-gray-300">
+                  <td colSpan={colCount} className="pt-2 pb-1 px-2">
+                    <div className="flex flex-col gap-1 text-sm w-full" dir="rtl">
+                      <div className="flex justify-between items-center font-semibold text-gray-800 border-b border-gray-100 pb-1 mb-1">
+                        <span>סה&quot;כ</span>
+                        <span>{totalAll.toLocaleString()} קוט&quot;ש</span>
+                      </div>
+                      <div className="flex justify-between items-center text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <span className="w-3 h-3 rounded-full shrink-0 bg-blue-500" />
+                          <span className="font-medium">דן</span>
+                        </div>
+                        <span>{totalDan.toLocaleString()} קוט&quot;ש</span>
+                      </div>
+                      <div className="flex justify-between items-center text-gray-600 pb-1">
+                        <div className="flex items-center gap-2">
+                          <span className="w-3 h-3 rounded-full shrink-0 bg-red-500" />
+                          <span className="font-medium">רוטשילד</span>
+                        </div>
+                        <span>{totalRothschild.toLocaleString()} קוט&quot;ש</span>
+                      </div>
+                    </div>
                   </td>
-                  <td className="pt-3 pb-1 px-2">
-                    <span className="inline-flex items-center gap-2">
-                      <span className="inline-block w-2.5 h-2.5 rounded-full bg-blue-500" />
-                      דן: {totalDan.toLocaleString()} קוט&quot;ש
-                    </span>
-                  </td>
-                  <td />
-                  {isAdmin && <td />}
-                </tr>
-                <tr className="bg-gray-50 font-semibold text-gray-700">
-                  <td className="pt-1 pb-3 px-2" colSpan={summaryLabelColSpan} />
-                  <td className="pt-1 pb-3 px-2">
-                    <span className="inline-flex items-center gap-2">
-                      <span className="inline-block w-2.5 h-2.5 rounded-full bg-red-500" />
-                      רוטשילד: {totalRothschild.toLocaleString()} קוט&quot;ש
-                    </span>
-                  </td>
-                  <td />
-                  {isAdmin && <td />}
                 </tr>
               </tfoot>
             </table>

@@ -70,17 +70,21 @@ export default function ConsumptionChart({ readings }: ConsumptionChartProps) {
           </ResponsiveContainer>
           </div>
 
-          <div className="flex flex-col gap-1 mt-3 text-sm w-full items-start">
+          <div className="flex flex-col gap-1 mt-3 text-sm w-full" dir="rtl">
+            <div className="flex justify-between items-center font-semibold text-gray-800 border-b border-gray-100 pb-1 mb-1">
+              <span>סה&quot;כ</span>
+              <span>{total.toLocaleString()} קוט&quot;ש</span>
+            </div>
             {data.map(entry => (
-              <div key={entry.name} className="flex items-center gap-2">
-                <span
-                  className="w-3 h-3 rounded-full shrink-0"
-                  style={{ backgroundColor: COLORS[entry.name] }}
-                />
-                <span className="text-gray-600">
-                  <span className="font-semibold">{entry.name}</span>{' '}
-                  {entry.value.toLocaleString()} קוט&quot;ש ({percentOf(entry.value)}%)
-                </span>
+              <div key={entry.name} className="flex justify-between items-center text-gray-600">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="w-3 h-3 rounded-full shrink-0"
+                    style={{ backgroundColor: COLORS[entry.name] }}
+                  />
+                  <span className="font-medium">{entry.name}</span>
+                </div>
+                <span>{entry.value.toLocaleString()} קוט&quot;ש</span>
               </div>
             ))}
           </div>
