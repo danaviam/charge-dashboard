@@ -56,9 +56,10 @@ export default function ConsumptionChart({ readings }: ConsumptionChartProps) {
                 endAngle={-270}
                 label={({ cx, cy, midAngle, innerRadius, outerRadius, value }) => {
                   const RADIAN = Math.PI / 180
+                  const angle = midAngle ?? 0
                   const radius = innerRadius + (outerRadius - innerRadius) * 0.55
-                  const x = cx + radius * Math.cos(-midAngle * RADIAN)
-                  const y = cy + radius * Math.sin(-midAngle * RADIAN)
+                  const x = cx + radius * Math.cos(-angle * RADIAN)
+                  const y = cy + radius * Math.sin(-angle * RADIAN)
                   const pct = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0'
                   return (
                     <text
