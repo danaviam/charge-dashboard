@@ -54,15 +54,38 @@ export default function ConsumptionChart({ readings }: ConsumptionChartProps) {
                 dataKey="value"
                 startAngle={90}
                 endAngle={-270}
+                label={({ cx, cy, midAngle, innerRadius, outerRadius, value }) => {
+                  const RADIAN = Math.PI / 180
+                  const radius = innerRadius + (outerRadius - innerRadius) * 0.55
+                  const x = cx + radius * Math.cos(-midAngle * RADIAN)
+                  const y = cy + radius * Math.sin(-midAngle * RADIAN)
+                  const pct = total > 0 ? ((value / total) * 100).toFixed(1) : '0.0'
+                  return (
+                    <text
+                      x={x}
+                      y={y}
+                      fill="white"
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fontSize={13}
+                      fontWeight="bold"
+                    >
+                      {pct}%
+                    </text>
+                  )
+                }}
+                labelLine={false}
               >
                 {data.map(entry => (
                   <Cell key={entry.name} fill={COLORS[entry.name]} />
                 ))}
               </Pie>
               <Tooltip
-                formatter={value =>
-                  `${Number(value ?? 0).toLocaleString()} קוט"ש`
-                }
+                formatter={(value, name) => {
+                  const kwh = Number(value ?? 0)
+                  const pct = total > 0 ? ((kwh / total) * 100).toFixed(1) : '0.0'
+                  return [`(${pct}%) ${kwh.toLocaleString()} קוט"ש`, name]
+                }}
               />
             </PieChart>
           </ResponsiveContainer>
@@ -82,7 +105,14 @@ export default function ConsumptionChart({ readings }: ConsumptionChartProps) {
                   />
                   <span className="font-medium">{entry.name}</span>
                 </div>
-                <span>{entry.value.toLocaleString()} קוט&quot;ש</span>
+                <span className="flex items-center gap-1">
+                  <span className="font-bold text-gray-800">
+                    {total > 0 ? ((entry.value / total) * 100).toFixed(1) : '0.0'}%
+                  </span>
+                  <span className="text-gray-400">
+                    ({entry.value.toLocaleString()} קוט&quot;ש)
+                  </span>
+                </span>
               </div>
             ))}
           </div>
