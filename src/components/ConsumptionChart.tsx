@@ -70,6 +70,9 @@ export default function ConsumptionChart({ readings }: ConsumptionChartProps) {
                       dominantBaseline="central"
                       fontSize={13}
                       fontWeight="bold"
+                      stroke="rgba(0,0,0,0.35)"
+                      strokeWidth={3}
+                      paintOrder="stroke"
                     >
                       {pct}%
                     </text>
