@@ -51,6 +51,12 @@ export default function ReadingForm({ readings, onSaved }: ReadingFormProps) {
       return
     }
 
+    fetch('/api/notify-reading', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ station, reading_kwh: value }),
+    }).catch(() => {})
+
     setReading('')
     onSaved()
   }
