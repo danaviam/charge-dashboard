@@ -3,17 +3,22 @@ import type { MeterReading, Station } from '../types/reading'
 const STORAGE_KEY = 'dashboard_last_baseline'
 
 export interface LastBaseline {
-  reading_kwh: number
-  station: Station
+  dan: number | null
+  rothschild: number | null
 }
 
-export function getLastBaseline(): LastBaseline | null {
+export function getLastBaseline(): LastBaseline {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
-    if (!raw) return null
-    return JSON.parse(raw) as LastBaseline
+    if (!raw) return { dan: null, rothschild: null }
+    const parsed = JSON.parse(raw)
+    // support old single-station format
+    if (typeof parsed.reading_kwh === 'number' && parsed.station) {
+      return { dan: null, rothschild: null, [parsed.station]: parsed.reading_kwh }
+    }
+    return parsed as LastBaseline
   } catch {
-    return null
+    return { dan: null, rothschild: null }
   }
 }
 
@@ -27,18 +32,22 @@ export function setLastBaseline(baseline: LastBaseline | null) {
 
 export function captureLastBaselineFromReadings(
   readings: MeterReading[]
-): LastBaseline | null {
-  const latest = [...readings].sort(
+): LastBaseline {
+  const sorted = [...readings].sort(
     (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  )[0]
-  if (!latest) return null
-  return { reading_kwh: Number(latest.reading_kwh), station: latest.station }
+  )
+  const latestDan = sorted.find(r => r.station === 'dan')
+  const latestRothschild = sorted.find(r => r.station === 'rothschild')
+  return {
+    dan: latestDan ? Number(latestDan.reading_kwh) : null,
+    rothschild: latestRothschild ? Number(latestRothschild.reading_kwh) : null,
+  }
 }
 
-export function getLastReading(readings: MeterReading[]): number | null {
-  const latest = [...readings].sort(
-    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-  )[0]
+export function getLastReading(readings: MeterReading[], station: Station): number | null {
+  const latest = [...readings]
+    .filter(r => r.station === station)
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
   if (latest) return Number(latest.reading_kwh)
-  return getLastBaseline()?.reading_kwh ?? null
+  return getLastBaseline()[station] ?? null
 }

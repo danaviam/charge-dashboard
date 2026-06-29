@@ -40,14 +40,14 @@ export function consumptionTotals(
 export function readingDiffById(readings: MeterReading[]): Record<string, number> {
   const sorted = sortByDateAsc(readings)
   const diffs: Record<string, number> = {}
+  const lastByStation: Partial<Record<Station, number>> = {}
 
-  sorted.forEach((current, idx) => {
-    if (idx === 0) {
-      diffs[current.id] = 0
-      return
-    }
-    const previous = Number(sorted[idx - 1].reading_kwh)
-    diffs[current.id] = Math.max(0, Number(current.reading_kwh) - previous)
+  sorted.forEach((current) => {
+    const prev = lastByStation[current.station]
+    diffs[current.id] = prev !== undefined
+      ? Math.max(0, Number(current.reading_kwh) - prev)
+      : 0
+    lastByStation[current.station] = Number(current.reading_kwh)
   })
 
   return diffs
