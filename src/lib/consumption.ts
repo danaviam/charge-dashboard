@@ -1,4 +1,4 @@
-import type { MeterReading } from '../types/reading'
+import type { MeterReading, Station } from '../types/reading'
 
 function sortByDateAsc(readings: MeterReading[]) {
   return [...readings].sort(
