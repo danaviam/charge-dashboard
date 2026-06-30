@@ -1,5 +1,8 @@
+import { useRef } from 'react'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
+import { toPng } from 'html-to-image'
 import { consumptionTotals } from '../lib/consumption'
+import { useRole } from '../context/RoleContext'
 import type { MeterReading } from '../types/reading'
 
 interface ConsumptionChartProps {
@@ -12,6 +15,7 @@ const COLORS: Record<string, string> = {
 }
 
 export default function ConsumptionChart({ readings }: ConsumptionChartProps) {
+  const { role } = useRole()
   const now = new Date()
   const currentMonth = now.getMonth()
   const currentYear = now.getFullYear()
@@ -30,11 +34,55 @@ export default function ConsumptionChart({ readings }: ConsumptionChartProps) {
 
   const isEmpty = data.length === 0
 
+  const cardRef = useRef<HTMLDivElement>(null)
+
+  const handleDownload = async () => {
+    if (!cardRef.current) return
+    const dataUrl = await toPng(cardRef.current, {
+      pixelRatio: 2,
+      backgroundColor: '#ffffff',
+      filter: node =>
+        !(node instanceof HTMLElement && node.dataset.html2imageIgnore === 'true'),
+    })
+    const link = document.createElement('a')
+    link.download = `consumption-${currentYear}-${String(currentMonth + 1).padStart(2, '0')}.png`
+    link.href = dataUrl
+    link.click()
+  }
+
   return (
-    <div className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 flex flex-col">
-      <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-4 text-right">
-        התפלגות החודש הנוכחי
-      </h2>
+    <div ref={cardRef} className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 flex flex-col">
+      <div className="flex items-center justify-between gap-2 mb-4" dir="rtl">
+        <h2 className="text-base sm:text-lg font-semibold text-gray-800 text-right">
+          התפלגות החודש הנוכחי
+        </h2>
+        {!isEmpty && role === 'admin' && (
+          <button
+            type="button"
+            onClick={handleDownload}
+            data-html2image-ignore="true"
+            title="הורד כתמונה"
+            aria-label="הורד כתמונה"
+            className="shrink-0 inline-flex items-center gap-1 rounded-lg px-2 py-1 text-xs text-gray-500 hover:text-gray-800 hover:bg-gray-100 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="w-4 h-4"
+            >
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            <span>PNG</span>
+          </button>
+        )}
+      </div>
 
       {isEmpty ? (
         <div className="flex-1 flex items-center justify-center text-gray-400 text-sm py-6 sm:py-8">
