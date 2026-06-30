@@ -1,4 +1,4 @@
-import type { MeterReading, Station } from '../types/reading'
+import type { MeterReading } from '../types/reading'
 
 const STORAGE_KEY = 'dashboard_last_baseline'
 
