@@ -14,7 +14,7 @@ export default function ReadingForm({ readings, onSaved }: ReadingFormProps) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const lastReading = useMemo(() => getLastReading(readings, station), [readings, station])
+  const lastReading = useMemo(() => getLastReading(readings), [readings])
 
   const handleStationChange = (s: Station) => {
     setStation(s)

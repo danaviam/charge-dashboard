@@ -44,10 +44,12 @@ export function captureLastBaselineFromReadings(
   }
 }
 
-export function getLastReading(readings: MeterReading[], station: Station): number | null {
-  const latest = [...readings]
-    .filter(r => r.station === station)
-    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
+export function getLastReading(readings: MeterReading[]): number | null {
+  const latest = [...readings].sort(
+    (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  )[0]
   if (latest) return Number(latest.reading_kwh)
-  return getLastBaseline()[station] ?? null
+  const baseline = getLastBaseline()
+  const vals = [baseline.dan, baseline.rothschild].filter((v): v is number => v !== null)
+  return vals.length > 0 ? Math.max(...vals) : null
 }
