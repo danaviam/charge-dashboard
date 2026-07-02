@@ -12,16 +12,11 @@ function Dashboard() {
   const [readings, setReadings] = useState<MeterReading[]>([])
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState<string | null>(null)
-  const [displayVersion, setDisplayVersion] = useState(0)
 
   const visibleReadings = useMemo(
     () => filterVisibleReadings(readings),
-    [readings, displayVersion]
+    [readings]
   )
-
-  const refreshDisplay = useCallback(() => {
-    setDisplayVersion(v => v + 1)
-  }, [])
 
   const fetchReadings = useCallback(async () => {
     setFetchError(null)
@@ -78,7 +73,7 @@ function Dashboard() {
             allReadings={readings}
             onDeleted={fetchReadings}
             onUpdated={fetchReadings}
-            onHistoryHidden={refreshDisplay}
+            onHistoryHidden={fetchReadings}
           />
         )}
       </main>

@@ -5,5 +5,6 @@ export interface MeterReading {
   created_at: string
   station: Station
   reading_kwh: number
+  hidden?: boolean
 }
 

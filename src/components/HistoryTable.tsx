@@ -1,8 +1,7 @@
 import { useMemo, useState } from 'react'
 import AdminDialog from './AdminDialog'
 import { consumptionTotals, readingDiffById } from '../lib/consumption'
-import { captureLastBaselineFromReadings, setLastBaseline } from '../lib/baseline'
-import { hideReadingIds } from '../lib/hiddenReadings'
+import { hideReadings } from '../lib/hiddenReadings'
 import { supabase } from '../lib/supabase'
 import { useRole } from '../context/RoleContext'
 import type { MeterReading } from '../types/reading'
@@ -80,7 +79,6 @@ export default function HistoryTable({ readings, allReadings, onDeleted, onUpdat
 
   const handleClearHistory = () => {
     const idsToHide = readings.map(r => r.id)
-    const capturedBaseline = captureLastBaselineFromReadings(readings)
     if (idsToHide.length === 0) {
       setDialog({
         message: 'אין קריאות למחיקה',
@@ -92,18 +90,25 @@ export default function HistoryTable({ readings, allReadings, onDeleted, onUpdat
 
     const message =
       `להסתיר ${idsToHide.length} קריאות מההיסטוריה?\n\n` +
-      'הקריאה האחרונה תישמר לצורך חישובים עתידיים (קודמת).'
+      'הקריאות יוסתרו בכל המכשירים ויישמרו לצורך חישובים עתידיים.'
 
     setDialog({
       message,
       mode: 'confirm',
       confirmLabel: 'מחק היסטוריה',
-      onConfirm: () => {
+      onConfirm: async () => {
         closeDialog()
-        setLastBaseline(capturedBaseline)
         setDeletingHistory(true)
-        hideReadingIds(idsToHide)
+        const { error } = await hideReadings(idsToHide)
         setDeletingHistory(false)
+        if (error) {
+          setDialog({
+            message: `שגיאה בהסתרת ההיסטוריה: ${error}`,
+            mode: 'alert',
+            onConfirm: closeDialog,
+          })
+          return
+        }
         onHistoryHidden()
       },
     })
