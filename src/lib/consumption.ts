@@ -1,4 +1,5 @@
 import type { MeterReading, Station } from '../types/reading'
+import { getLastBaseline, type LastBaseline } from './baseline'
 
 function sortByDateAsc(readings: MeterReading[]) {
   return [...readings].sort(
@@ -37,7 +38,10 @@ export function consumptionTotals(
   }
 }
 
-export function readingDiffById(readings: MeterReading[]): Record<string, number> {
+export function readingDiffById(
+  readings: MeterReading[],
+  baseline: LastBaseline = getLastBaseline()
+): Record<string, number> {
   const sorted = [...readings].sort(
     (a, b) =>
       Number(a.reading_kwh) - Number(b.reading_kwh) ||
@@ -47,7 +51,9 @@ export function readingDiffById(readings: MeterReading[]): Record<string, number
 
   sorted.forEach((current, idx) => {
     if (idx === 0) {
-      diffs[current.id] = 0
+      const base = baseline[current.station]
+      const value = Number(current.reading_kwh)
+      diffs[current.id] = base != null && value >= base ? value - base : 0
       return
     }
     const previous = Number(sorted[idx - 1].reading_kwh)
