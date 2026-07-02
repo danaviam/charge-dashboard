@@ -58,7 +58,11 @@ export default function HistoryTable({ readings, allReadings, onDeleted, onUpdat
   )
   const diffById = useMemo(() => readingDiffById(allReadings), [allReadings])
 
-  const { totalDan, totalRothschild } = consumptionTotals(allReadings)
+  const historyCleared = allReadings.length > readings.length
+  const now = new Date()
+  const { totalDan, totalRothschild } = historyCleared
+    ? consumptionTotals(allReadings, { month: now.getMonth(), year: now.getFullYear() })
+    : consumptionTotals(allReadings)
   const totalAll = totalDan + totalRothschild
 
   const handleDelete = (id: string) => {
