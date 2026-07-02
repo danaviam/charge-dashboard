@@ -1,12 +1,13 @@
 import { useRef } from 'react'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { toPng } from 'html-to-image'
-import { consumptionTotals } from '../lib/consumption'
+import { consumptionTotals, readingDiffById } from '../lib/consumption'
 import { useRole } from '../context/RoleContext'
 import type { MeterReading } from '../types/reading'
 
 interface ConsumptionChartProps {
   readings: MeterReading[]
+  allReadings: MeterReading[]
 }
 
 const COLORS: Record<string, string> = {
@@ -14,15 +15,16 @@ const COLORS: Record<string, string> = {
   רוטשילד: '#ef4444',
 }
 
-export default function ConsumptionChart({ readings }: ConsumptionChartProps) {
+export default function ConsumptionChart({ readings, allReadings }: ConsumptionChartProps) {
   const { role } = useRole()
   const now = new Date()
   const currentMonth = now.getMonth()
   const currentYear = now.getFullYear()
 
+  const diffById = readingDiffById(allReadings)
   const { totalDan: danTotal, totalRothschild: rothschildTotal } = consumptionTotals(
-    readings,
-    { month: currentMonth, year: currentYear }
+    diffById,
+    readings
   )
 
   const data = [
@@ -54,7 +56,7 @@ export default function ConsumptionChart({ readings }: ConsumptionChartProps) {
     <div ref={cardRef} className="bg-white rounded-2xl shadow-sm p-4 sm:p-6 flex flex-col">
       <div className="flex items-center justify-between gap-2 mb-4" dir="rtl">
         <h2 className="text-base sm:text-lg font-semibold text-gray-800 text-right">
-          התפלגות החודש הנוכחי
+          התפלגות צריכה
         </h2>
         {!isEmpty && role === 'admin' && (
           <button
@@ -86,7 +88,7 @@ export default function ConsumptionChart({ readings }: ConsumptionChartProps) {
 
       {isEmpty ? (
         <div className="flex-1 flex items-center justify-center text-gray-400 text-sm py-6 sm:py-8">
-          אין נתונים לחודש הנוכחי
+          אין נתונים להצגה
         </div>
       ) : (
         <>
