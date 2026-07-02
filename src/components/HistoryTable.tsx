@@ -9,6 +9,7 @@ import type { MeterReading } from '../types/reading'
 
 interface HistoryTableProps {
   readings: MeterReading[]
+  allReadings: MeterReading[]
   onDeleted: () => void
   onUpdated: () => void
   onHistoryHidden: () => void
@@ -29,7 +30,7 @@ const stationLabel: Record<string, { label: string; className: string }> = {
   rothschild: { label: 'רוטשילד', className: 'bg-red-100 text-red-700' },
 }
 
-export default function HistoryTable({ readings, onDeleted, onUpdated, onHistoryHidden }: HistoryTableProps) {
+export default function HistoryTable({ readings, allReadings, onDeleted, onUpdated, onHistoryHidden }: HistoryTableProps) {
   const { role } = useRole()
   const isAdmin = role === 'admin'
 
@@ -55,9 +56,9 @@ export default function HistoryTable({ readings, onDeleted, onUpdated, onHistory
       ),
     [readings]
   )
-  const diffById = useMemo(() => readingDiffById(readings), [readings])
+  const diffById = useMemo(() => readingDiffById(allReadings), [allReadings])
 
-  const { totalDan, totalRothschild } = consumptionTotals(readings)
+  const { totalDan, totalRothschild } = consumptionTotals(allReadings)
   const totalAll = totalDan + totalRothschild
 
   const handleDelete = (id: string) => {

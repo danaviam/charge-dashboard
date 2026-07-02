@@ -64,8 +64,8 @@ function Dashboard() {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-          <ReadingForm readings={visibleReadings} onSaved={fetchReadings} />
-          <ConsumptionChart readings={visibleReadings} />
+          <ReadingForm readings={readings} onSaved={fetchReadings} />
+          <ConsumptionChart readings={readings} />
         </div>
 
         {loading ? (
@@ -75,6 +75,7 @@ function Dashboard() {
         ) : (
           <HistoryTable
             readings={visibleReadings}
+            allReadings={readings}
             onDeleted={fetchReadings}
             onUpdated={fetchReadings}
             onHistoryHidden={refreshDisplay}
