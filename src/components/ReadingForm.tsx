@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { getLastReading } from '../lib/baseline'
+import { supabase } from '../lib/supabase'
 import type { MeterReading, Station } from '../types/reading'
 
 interface ReadingFormProps {
@@ -39,16 +40,14 @@ export default function ReadingForm({ readings, onSaved }: ReadingFormProps) {
     }
 
     setSaving(true)
-    const res = await fetch('/api/db/insert-reading', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ station, reading_kwh: value }),
-    }).catch(() => null)
+    const { error: dbError } = await supabase.from('meter_readings').insert({
+      station,
+      reading_kwh: value,
+    })
     setSaving(false)
 
-    if (!res?.ok) {
-      const body = await res?.json().catch(() => ({}))
-      setError(`שגיאה בשמירה: ${body?.error ?? 'שגיאה לא ידועה'}`)
+    if (dbError) {
+      setError(`שגיאה בשמירה: ${dbError.message}`)
       return
     }
 

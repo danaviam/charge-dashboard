@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import AdminDialog from './AdminDialog'
 import { consumptionTotals, readingDiffById } from '../lib/consumption'
 import { hideReadings } from '../lib/hiddenReadings'
+import { supabase } from '../lib/supabase'
 import { useRole } from '../context/RoleContext'
 import type { MeterReading } from '../types/reading'
 
@@ -66,11 +67,7 @@ export default function HistoryTable({ readings, allReadings, onDeleted, onUpdat
       confirmLabel: 'מחק',
       onConfirm: async () => {
         closeDialog()
-        await fetch('/api/db/delete-reading', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id }),
-        }).catch(() => {})
+        await supabase.from('meter_readings').delete().eq('id', id)
         onDeleted()
       },
     })
@@ -127,11 +124,7 @@ export default function HistoryTable({ readings, allReadings, onDeleted, onUpdat
     const value = parseInt(editValue, 10)
     if (isNaN(value) || value < 0) return
     setSaving(true)
-    await fetch('/api/db/update-reading', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ id, reading_kwh: value }),
-    }).catch(() => {})
+    await supabase.from('meter_readings').update({ reading_kwh: value }).eq('id', id)
     setSaving(false)
     setEditingId(null)
     setEditValue('')
