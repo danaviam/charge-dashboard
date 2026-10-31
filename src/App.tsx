@@ -22,7 +22,7 @@ function Dashboard() {
     setFetchError(null)
     const { data, error } = await supabase
       .from('meter_readings')
-      .select('*')
+      .select('id, created_at, station, reading_kwh, hidden')
       .order('created_at', { ascending: false })
 
     if (error) {
