@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import AdminDialog from './AdminDialog'
 import { consumptionTotals, readingDiffById } from '../lib/consumption'
 import { hideReadings } from '../lib/hiddenReadings'
+import { downloadHistoryCsv } from '../lib/exportCsv'
 import { supabase } from '../lib/supabase'
 import { useRole } from '../context/RoleContext'
 import type { MeterReading } from '../types/reading'
@@ -237,7 +238,17 @@ export default function HistoryTable({ readings, allReadings, onDeleted, onUpdat
         <h2 className="text-base sm:text-lg font-semibold text-gray-800 text-right">
           היסטוריית קריאות
         </h2>
-        {isAdmin && readings.length > 0 && (
+        {readings.length > 0 && (
+        <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => downloadHistoryCsv(sorted, diffById)}
+            title="ייצוא הקריאות המוצגות לקובץ CSV"
+            className="shrink-0 text-sm text-gray-700 hover:text-gray-900 border border-gray-300 hover:border-gray-400 rounded-lg px-3 py-2 transition-colors min-h-[44px] sm:min-h-0"
+          >
+            ייצוא CSV
+          </button>
+          {isAdmin && (
           <button
             type="button"
             onClick={handleClearHistory}
@@ -247,6 +258,8 @@ export default function HistoryTable({ readings, allReadings, onDeleted, onUpdat
           >
             {deletingHistory ? 'מוחק...' : 'מחק היסטוריה'}
           </button>
+          )}
+        </div>
         )}
       </div>
 
